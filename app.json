@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.guessthenumber"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.guessthenumber"
+  }
+}

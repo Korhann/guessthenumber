@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.korhann.backend"
+  },
+  "ios": {
+    "bundleIdentifier": "com.korhann.backend"
+  }
+}

@@ -1,0 +1,54 @@
+
+
+[√] start game en başta olacak, oyuncu basınca bekleyecek
+[√] başkası da basarsa onu da aynı odaya alıcak
+
+
+- SAYI GİRME
+[ ] Yeşil kutu, karşı taraf 4 haneli rakamı girince ready yazısı çıkacak
+[ ] Karşı taraf sayıyı girmezse karşı tarafın sayı girmesi bekleniyor diye alert olacak
+[ ] karşı taraf girince oyun başlatılacak
+
+
+- Matchmaking mantığı
+[ ] kullanıcı start game e basıcak
+[ ] bekleme odasına atılacak
+[ ] bekleme odasında toplam 2 oyuncu olunca start_matchmaking e atıcak
+[ ] eğer iki oyuncuda karşı tarafına 4 haneli sayısında girmiş ise game_start a atıcak oyuncuları ve maçı yöneticek
+
+================================================================================
+ONLINE MULTIPLAYER - OYUNCU TESPİTİ
+================================================================================
+
+OYUNCU KİMLİK TESPİTİ İÇİN GEREKENLER:
+---------------------------------------
+1. Her kullanıcının benzersiz bir "userId" veya "playerId" olmalı
+2. Oyun odası (gameRoom) veri yapısında player1 ve player2 kimlikleri saklanmalı
+3. Mevcut kullanıcının hangi oyuncu olduğu belirlenmeli
+
+VERİ YAPISI ÖNERİSİ:
+--------------------
+gameRoom = {
+    roomId: "room_123",
+    player1Id: "user_abc123",      // Oyuncu 1'in benzersiz ID'si
+    player2Id: "user_xyz789",       // Oyuncu 2'nin benzersiz ID'si
+    player1Secret: "1234",         // Oyuncu 1'in gizli sayısı
+    player2Secret: "5678",         // Oyuncu 2'nin gizli sayısı
+    activePlayer: 1,               // Sıradaki oyuncu
+    status: "waiting" / "playing" / "finished"
+}
+
+ÖNEMLİ NOTLAR:
+--------------
+- Her iki cihazda da aynı gameRoom verisi olmalı
+- player1Secret ve player2Secret diğer oyuncuya GÖSTERİLMEMELİ
+- Sadece tahmin yapılırken rakibin gizli sayısı kullanılmalı
+- activePlayer değiştiğinde her iki cihazda da UI güncellenmeli
+
+
+
+Matchmaking mantığı:
+- Gamescreen de oyuncu maç bul a tıklayacak
+- Maç bul a tıklayan başka oyuncu da varsa onları eşleştirip gameRoom da veriyi kuracak
+
+

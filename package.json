@@ -1,0 +1,31 @@
+{
+  "name": "guessthenumber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "^7.15.9",
+    "@react-navigation/native": "^7.2.1",
+    "@react-navigation/native-stack": "^7.14.9",
+    "expo": "~55.0.8",
+    "expo-dev-client": "~55.0.28",
+    "expo-status-bar": "~55.0.4",
+    "http": "^0.0.1-security",
+    "mongodb": "^7.1.1",
+    "react": "19.2.0",
+    "react-native": "0.83.2",
+    "react-native-navigation-bar": "^0.2.1",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "styled-components": "^6.1.14"
+  }
+}
