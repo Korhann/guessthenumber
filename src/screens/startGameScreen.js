@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import { StyleSheet,View,TouchableOpacity, Alert, Text} from "react-native";
+import { StyleSheet,View,TouchableOpacity, Alert, Text, ActivityIndicator, Modal} from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from "../context/AuthContext";
 import { io } from 'socket.io-client';
@@ -30,6 +30,7 @@ export function initSocket() {
             Alert.alert('Match Found!', 'Game is starting!');
         });
 
+
         socket.on('disconnect', () => {
             console.log('Disconnected from server');
         });
@@ -39,6 +40,7 @@ export function initSocket() {
 
 export function startGame(username, userId) {
     playerList.push(userId);
+    console.log(playerList.length);
     if (!socket) {
         socket = initSocket();
     }
@@ -46,8 +48,7 @@ export function startGame(username, userId) {
         socket.connect();
     }
     console.log('starting the game');
-    // socket.emit('join_queue',{username,userId});
-    socket.emit('waiting_room',{username});
+    socket.emit('waiting_room',{username,userId});
 }
 
 export function getSocket() {
@@ -72,6 +73,7 @@ export default function StartGameScreen() {
             }
         }
     },[socket,navigation]);
+
 
     const getUserId = async () => {
         try {
@@ -113,6 +115,19 @@ export default function StartGameScreen() {
                 <Text style={styles.startButtonText}>Start Game</Text>
             </TouchableOpacity>
             </View>
+            <Modal
+                visible={isSearching}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => null}
+            >
+                <View style={styles.loadingOverlay}>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#4CAF50" />
+                        <Text style={styles.loadingText}>Looking for an opponent...</Text>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -142,5 +157,22 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    loadingOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingContainer: {
+        backgroundColor: '#fff',
+        padding: 30,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 15,
+        fontSize: 16,
+        color: '#333',
     }
 });

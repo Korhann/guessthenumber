@@ -17,16 +17,20 @@ export function initSocket(httpServer) {
     console.log(`User connected: ${socket.id}`);
 
     socket.on('waiting_room', (data) => {
-      console.log(`${data.username} is in the waiting room`);
-      console.log('im in the waiting room');
-      //todo: burada listeye 2 oyuncu eklicem ve sonra join_queue çalıştırıcam
+      // console.log(`${data.username} is in the waiting room`);
+      waitingRoomList.push({socketId: socket.id, username: data.username});
+      console.log('Waiting room:', waitingRoomList);
+
+      if (waitingRoomList.length === 2) {
+        const player1 = waitingRoomList.shift();
+        console.log(player1);
+        const player2 = waitingRoomList.shift();
+        addToQueue(io.sockets.sockets.get(player1.socketId), player1.username);
+        addToQueue(io.sockets.sockets.get(player2.socketId), player2.username);
+      }
     });
 
-    socket.on('join_queue', (data) => {
-      addToQueue(socket,data.username);
-    });
-
-    socket.on('start_matchmaking', (data) => {
+    socket.on('game_finished', (data) => {
       
     });
 
