@@ -5,16 +5,10 @@
 
 
 - SAYI GİRME
-[ ] Yeşil kutu, karşı taraf 4 haneli rakamı girince ready yazısı çıkacak
-[ ] Karşı taraf sayıyı girmezse karşı tarafın sayı girmesi bekleniyor diye alert olacak
-[ ] karşı taraf girince oyun başlatılacak
+[ ] iki taraf da sadece kırmızı kutuya girebilicek
+[ ] karşılıklı sayı girince farklı bir soket bilgilendirilecek
+[ ] oyuncu sırası da karşılıklı bilgilendirmeyle değişicek
 
-
-- Matchmaking mantığı
-[ ] kullanıcı start game e basıcak
-[ ] bekleme odasına atılacak
-[ ] bekleme odasında toplam 2 oyuncu olunca start_matchmaking e atıcak
-[ ] eğer iki oyuncuda karşı tarafına 4 haneli sayısında girmiş ise game_start a atıcak oyuncuları ve maçı yöneticek
 
 ================================================================================
 ONLINE MULTIPLAYER - OYUNCU TESPİTİ
