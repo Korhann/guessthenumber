@@ -24,17 +24,17 @@ export function initSocket(httpServer) {
       if (waitingRoomList.length === 2) {
         const player1 = waitingRoomList.shift();
         const player2 = waitingRoomList.shift();
-        console.log(player1.socketId);
-        console.log(player2.socketId);
         addToQueue(io.sockets.sockets.get(player1.socketId), player1.username);
         addToQueue(io.sockets.sockets.get(player2.socketId), player2.username);
       }
     });
 
-    socket.on('secret_numbers', (data) => {
-      console.log('helllo');
-      console.log('secret number 1',data.player1Secret);
-      console.log('secret number 2',data.player2Secret);
+    socket.on('secret_submitted', (data) => {
+      console.log(`Player ${data.playerRole} submitted their secret in room ${data.roomId}`);
+      socket.to(data.roomId).emit('opponent_secret_submitted', {
+        playerRole: data.playerRole,
+        secret: data.secret
+      });
     });
 
     socket.on('game_finished', (data) => {
@@ -53,7 +53,6 @@ function addToQueue(socket,username) {
   // push the players to the queueList
   queueList.push({socketId: socket.id, username});
 
-  console.log(queueList.length);
   if (queueList.length !== 2) {
     console.log('There is one player here');
   } else {
@@ -64,16 +63,23 @@ function addToQueue(socket,username) {
     // Get the socket and join the room
     const socket1 = io.sockets.sockets.get(player1.socketId);
     const socket2 = io.sockets.sockets.get(player2.socketId);
+
+    // // print the sockets to know which player is hosting
+    // console.log(socket1);
+    // console.log(socket2);
+
     if (socket1) socket1.join(roomId);
     if (socket2) socket2.join(roomId);
     // Notify both players
     io.to(player1.socketId).emit('game_start', { 
       roomId, 
-      opponent: player2.username 
+      opponent: player2.username,
+      playerRole: 1
     });
     io.to(player2.socketId).emit('game_start', { 
       roomId, 
-      opponent: player1.username 
+      opponent: player1.username ,
+      playerRole: 2
     });
     console.log(`Game started: ${player1.username} vs ${player2.username}`);
   }

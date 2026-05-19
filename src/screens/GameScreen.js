@@ -1,26 +1,30 @@
 import { StyleSheet, View, Text, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { useEffect, useState } from "react";
 import GameMotor from "../gamecomponents/gamemotor";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Socket } from "socket.io-client";
-import MyButton from "../gamecomponents/button";
 import { getSocket, initSocket } from "./startGameScreen";
-import { io } from "socket.io-client";
+import { useRoute } from "@react-navigation/native";
 
 export default function GameScreen() {
     const [player1Secret, setPlayer1Secret] = useState(null);
     const [player2Secret, setPlayer2Secret] = useState(null);
     const [activePlayer, setActivePlayer] = useState(1);
-    const [currentPlayer,setCurrentPlayer] = useState(1);
+    const [iHaveSubmitted, setIHaveSubmitted] = useState(false);
+
+    const socket = getSocket();
+
+    const route = useRoute();
+    const {roomId, opponent, playerRole} = route.params || {};
 
     const bothPlayersReady = player1Secret !== null && player2Secret !== null;
 
-    const handlePlayer1Submit = (secret) => {
-        setPlayer1Secret(secret);
-    };
-
-    const handlePlayer2Submit = (secret) => {
-        setPlayer2Secret(secret);
+    const handleOpponentSecretSubmit = (secret) => {
+        if (playerRole === 1) {
+            setPlayer2Secret(secret);
+        } else {
+            setPlayer1Secret(secret);
+        }
+        setIHaveSubmitted(true);
+        socket.emit('secret_submitted', { roomId, secret, playerRole });
     };
 
     const handleGuessSubmitted = () => {
@@ -28,16 +32,31 @@ export default function GameScreen() {
     };
 
     useEffect(() => {
-        // todo: burada iki oyuncu da rakam girince göndermem lazım
-        const socket = getSocket();
-        if (socket && player1Secret && player2Secret) {
-            socket.emit('secret_numbers',{player1Secret,player2Secret});
-            return () => {
-                socket.off('secret_numbers');
-            }
-        }
-    },[player1Secret,player2Secret]);
+        if (!socket) return;
 
+        socket.on('opponent_secret_submitted', (data) => {
+            if (data.playerRole === 1) {
+                setPlayer2Secret(data.secret);
+            } else {
+                setPlayer1Secret(data.secret);
+            }
+        });
+
+        return () => {
+            socket.off('opponent_secret_submitted');
+        };
+    }, [socket]);
+
+    if (!playerRole) {
+        console.log('GameScreen params:', route.params);
+        return (
+            <View style={styles.mainContainer}>
+                <View style={styles.singleGameContainer}>
+                    <Text style={styles.playerText}>Loading game...</Text>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.mainContainer}>
@@ -52,31 +71,20 @@ export default function GameScreen() {
                         username={activePlayer === 1 ? "Player1" : "Player2"}
                     />
                 </View>
+            ) : iHaveSubmitted ? (
+                <View style={styles.singleGameContainer}>
+                    <Text style={styles.readyText}>Waiting for opponent to enter the number...</Text>
+                </View>
             ) : (
-                <>
-                    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                        <View pointerEvents="none" style={[styles.container1, player1Secret === null && {backgroundColor: '#008000'}]}>
-                        <View style={styles.contentWrapper}>
-                            {player1Secret === null ? (
-                                <GameMotor onSecretSubmit={handlePlayer1Submit} color={'#008000'} username="Player1" hideConfirm={true} />
-                            ) : (
-                                <Text style={styles.readyText}>Ready!</Text>
-                            )}
-                        </View>
-                    </View>
-                    </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                        <View pointerEvents={currentPlayer === 2 ? 'none': 'auto'} style={[styles.container2, player2Secret === null && {backgroundColor: '#FF0000'}]}>
-                        <View style={styles.contentWrapper}>
-                            {player2Secret === null ? (
-                                <GameMotor onSecretSubmit={handlePlayer2Submit} color={'#FF0000'} username="Player2"/>
-                            ) : (
-                                <Text style={styles.readyText}>Ready!</Text>
-                            )}
-                        </View>
-                    </View>
-                    </TouchableWithoutFeedback>
-                </>
+                <View style={styles.mainContainer}>
+                    <Text style={styles.playerText}>Enter {opponent}'s secret number:</Text>
+                    <GameMotor 
+                        onSecretSubmit={handleOpponentSecretSubmit}
+                        color={playerRole === 1 ? '#008000' : '#FF0000'}
+                        username={playerRole === 1 ? "Player1" : "Player2"}
+                        hideConfirm={false}
+                    />
+                </View>
             )}
         </View>
     );

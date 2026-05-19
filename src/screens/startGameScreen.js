@@ -38,7 +38,6 @@ export function initSocket() {
 
 export function startGame(username, userId) {
     playerList.push(userId);
-    console.log(playerList.length);
     if (!socket) {
         socket = initSocket();
     }
@@ -62,10 +61,15 @@ export default function StartGameScreen() {
 
     useEffect(() => {
         if (socket) {
-            socket.on('game_start', () => {
-                setIsSearching(false);
-                navigation.navigate('Game');
+        socket.on('game_start', (data) => {
+            console.log('game_start received in component:', data);
+            setIsSearching(false);
+            navigation.navigate('Game', {
+                roomId: data.roomId,
+                opponent: data.opponent,
+                playerRole: data.playerRole
             });
+        });
             return () => {
                 socket.off('game_start');
             }
@@ -73,7 +77,7 @@ export default function StartGameScreen() {
     },[socket,navigation]);
 
 
-    const getUserId = async () => {
+    const getUserData = async () => {
         try {
             if (!token) {
                 throw new Error('No auth token available');
@@ -89,8 +93,7 @@ export default function StartGameScreen() {
                 throw new Error(`HTTP ${response.status}`);
             }
             const data = await response.json();
-
-            return data._id; 
+            return {id: data._id, username: data.username };
         } catch (e) {
             console.error('Failed to get user ID:', e);
             return null;
@@ -103,11 +106,13 @@ export default function StartGameScreen() {
                 <TouchableOpacity
                 style={styles.startButton}
                 onPress= { async () => {
-                    const id = await getUserId();
-                    setUserId(id);
-                    setIsSearching(true);
-                    initSocket();
-                    startGame(user?.username, id);
+                    const userData = await getUserData();
+                    if (userData) {
+                        setUserId(userData.id);
+                        setIsSearching(true);
+                        initSocket();
+                        startGame(userData.username, userData.id);
+                    }
                 }}
             >
                 <Text style={styles.startButtonText}>Start Game</Text>
