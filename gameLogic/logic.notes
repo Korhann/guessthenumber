@@ -5,9 +5,15 @@
 
 
 - SAYI GİRME
-[ ] iki taraf da sadece kırmızı kutuya girebilicek
+[√] iki taraf da sadece kırmızı kutuya girebilicek
 [ ] karşılıklı sayı girince farklı bir soket bilgilendirilecek
+    - oyuncunun kendi girdiği sayı karşı tarafın bilmesi için atanıcak
+    - oyuncu 1 veya 2 (karşı taraf hangisiyse) sayı girince yeşil kısımda ready olacak
 [ ] oyuncu sırası da karşılıklı bilgilendirmeyle değişicek
+
+
+
+
 
 
 ================================================================================

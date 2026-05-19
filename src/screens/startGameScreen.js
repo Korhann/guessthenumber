@@ -3,9 +3,8 @@ import { StyleSheet,View,TouchableOpacity, Alert, Text, ActivityIndicator, Modal
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from "../context/AuthContext";
 import { io } from 'socket.io-client';
-import { API_URL, mac_IP_localHost } from "../../config";
+import { API_URL, mac_IP_localHost } from "../../config";   
 
-//todo: Telefondan da çalıştır çalışıyor mu diye bak
 
 let socket = null;
 let playerList = [];
@@ -16,7 +15,6 @@ export function initSocket() {
             transports: ['websocket'],
             autoConnect: true,
         });
-
         socket.on('connection', () => {
             console.log('Connected to server:', socket.id);
         });

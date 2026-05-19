@@ -23,11 +23,18 @@ export function initSocket(httpServer) {
 
       if (waitingRoomList.length === 2) {
         const player1 = waitingRoomList.shift();
-        console.log(player1);
         const player2 = waitingRoomList.shift();
+        console.log(player1.socketId);
+        console.log(player2.socketId);
         addToQueue(io.sockets.sockets.get(player1.socketId), player1.username);
         addToQueue(io.sockets.sockets.get(player2.socketId), player2.username);
       }
+    });
+
+    socket.on('secret_numbers', (data) => {
+      console.log('helllo');
+      console.log('secret number 1',data.player1Secret);
+      console.log('secret number 2',data.player2Secret);
     });
 
     socket.on('game_finished', (data) => {

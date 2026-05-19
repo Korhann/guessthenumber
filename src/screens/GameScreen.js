@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import GameMotor from "../gamecomponents/gamemotor";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Socket } from "socket.io-client";
+import MyButton from "../gamecomponents/button";
+import { getSocket, initSocket } from "./startGameScreen";
+import { io } from "socket.io-client";
 
 export default function GameScreen() {
     const [player1Secret, setPlayer1Secret] = useState(null);
@@ -24,6 +27,17 @@ export default function GameScreen() {
         setActivePlayer(activePlayer === 1 ? 2 : 1);
     };
 
+    useEffect(() => {
+        // todo: burada iki oyuncu da rakam girince göndermem lazım
+        const socket = getSocket();
+        if (socket && player1Secret && player2Secret) {
+            socket.emit('secret_numbers',{player1Secret,player2Secret});
+            return () => {
+                socket.off('secret_numbers');
+            }
+        }
+    },[player1Secret,player2Secret]);
+
 
     return (
         <View style={styles.mainContainer}>
@@ -41,10 +55,10 @@ export default function GameScreen() {
             ) : (
                 <>
                     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                        <View style={[styles.container1, player1Secret === null && {backgroundColor: '#008000'}]}>
+                        <View pointerEvents="none" style={[styles.container1, player1Secret === null && {backgroundColor: '#008000'}]}>
                         <View style={styles.contentWrapper}>
                             {player1Secret === null ? (
-                                <GameMotor onSecretSubmit={handlePlayer1Submit} color={'#008000'} username="Player1" />
+                                <GameMotor onSecretSubmit={handlePlayer1Submit} color={'#008000'} username="Player1" hideConfirm={true} />
                             ) : (
                                 <Text style={styles.readyText}>Ready!</Text>
                             )}
