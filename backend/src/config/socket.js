@@ -30,10 +30,16 @@ export function initSocket(httpServer) {
     });
 
     socket.on('secret_submitted', (data) => {
-      console.log(`Player ${data.playerRole} submitted their secret in room ${data.roomId}`);
+      console.log(`Player ${data.playerRole} submitted their secret ${data.secret} in room ${data.roomId}`);
       socket.to(data.roomId).emit('opponent_secret_submitted', {
         playerRole: data.playerRole,
         secret: data.secret
+      });
+    });
+
+    socket.on('change_player_turn', (data) => {
+      io.to(data.roomId).emit('changed_turns', {
+        activePlayer: data.activePlayer
       });
     });
 
@@ -63,10 +69,6 @@ function addToQueue(socket,username) {
     // Get the socket and join the room
     const socket1 = io.sockets.sockets.get(player1.socketId);
     const socket2 = io.sockets.sockets.get(player2.socketId);
-
-    // // print the sockets to know which player is hosting
-    // console.log(socket1);
-    // console.log(socket2);
 
     if (socket1) socket1.join(roomId);
     if (socket2) socket2.join(roomId);

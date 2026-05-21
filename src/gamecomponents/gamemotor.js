@@ -6,7 +6,13 @@ import { useAuth } from '../context/AuthContext';
 const API_URL = 'http://192.168.1.108:3000';
 
 
-export default function GameMotor({ onSecretSubmit, targetNumber, onGuessSubmitted, username, hideConfirm = false }) {
+export default function GameMotor({ 
+    onSecretSubmit,
+    targetNumber,
+    onGuessSubmitted,
+    hideConfirm = false ,
+    buttonClickable
+}) {
     const { token, isLoading, user} = useAuth();
     const [firstvalue, setfirstvalue] = useState('');
     const [secondvalue, setsecondvalue] = useState('');
@@ -18,7 +24,6 @@ export default function GameMotor({ onSecretSubmit, targetNumber, onGuessSubmitt
     const secondInput = useRef(null);
     const thirdInput = useRef(null);
     const fourthInput = useRef(null);
-
 
     const [isEnteringNumber, setIsEnteringNumber] = useState(true);
     const [secretNumber, setSecretNumber] = useState('');
@@ -169,7 +174,7 @@ export default function GameMotor({ onSecretSubmit, targetNumber, onGuessSubmitt
                 selectTextOnFocus={true}
                 />
             </View>
-            <MyButton title={'Submit'} onPress={compareSubmission}></MyButton>
+            <MyButton title={'Submit'} onPress={compareSubmission} buttonClickable={buttonClickable}></MyButton>
             </View>
         );
     }
@@ -192,7 +197,10 @@ export default function GameMotor({ onSecretSubmit, targetNumber, onGuessSubmitt
                     />
                 </View>
                 </TouchableWithoutFeedback>
-                {!hideConfirm && <MyButton title={'Confirm'} onPress={handleSecretNumberSubmit}></MyButton>}
+                {
+                !hideConfirm && <MyButton title={'Confirm'} onPress={handleSecretNumberSubmit} buttonClickable={true}>
+                    </MyButton>
+                }
             </View>
         );
     }

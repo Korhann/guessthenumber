@@ -8,14 +8,15 @@ export default function GameScreen() {
     const [player1Secret, setPlayer1Secret] = useState(null);
     const [player2Secret, setPlayer2Secret] = useState(null);
     const [activePlayer, setActivePlayer] = useState(1);
+    const [sharedActivePlayer, setSharedActivePlayer] = useState(1);
     const [iHaveSubmitted, setIHaveSubmitted] = useState(false);
 
     const socket = getSocket();
-
     const route = useRoute();
     const {roomId, opponent, playerRole} = route.params || {};
-
+    const isMyTurn = playerRole === sharedActivePlayer;
     const bothPlayersReady = player1Secret !== null && player2Secret !== null;
+    
 
     const handleOpponentSecretSubmit = (secret) => {
         if (playerRole === 1) {
@@ -28,7 +29,14 @@ export default function GameScreen() {
     };
 
     const handleGuessSubmitted = () => {
-        setActivePlayer(activePlayer === 1 ? 2 : 1);
+        if (playerRole !== sharedActivePlayer) return;
+
+        const newActivePlayer = sharedActivePlayer === 1 ? 2 : 1;
+        setActivePlayer(newActivePlayer);
+        socket.emit('change_player_turn', {
+            activePlayer: newActivePlayer,
+            roomId
+        });
     };
 
     useEffect(() => {
@@ -41,14 +49,17 @@ export default function GameScreen() {
                 setPlayer1Secret(data.secret);
             }
         });
+        socket.on('changed_turns', (data) => {
+            setSharedActivePlayer(data.activePlayer);
+        });
 
         return () => {
             socket.off('opponent_secret_submitted');
+            socket.off('changed_turns');
         };
     }, [socket]);
 
     if (!playerRole) {
-        console.log('GameScreen params:', route.params);
         return (
             <View style={styles.mainContainer}>
                 <View style={styles.singleGameContainer}>
@@ -63,12 +74,13 @@ export default function GameScreen() {
             {bothPlayersReady ? (
                 <View style={styles.singleGameContainer}>
                     <Text style={styles.playerText}>
-                        Player {activePlayer}'s Turn
+                        Player {sharedActivePlayer}'s Turn
                     </Text>
                     <GameMotor
-                        targetNumber={activePlayer === 1 ? player1Secret : player2Secret}
+                        targetNumber={sharedActivePlayer === 1 ? player1Secret : player2Secret}
                         onGuessSubmitted={handleGuessSubmitted}
-                        username={activePlayer === 1 ? "Player1" : "Player2"}
+                        buttonClickable={isMyTurn}
+                        username={sharedActivePlayer === 1 ? "Player1" : "Player2"}
                     />
                 </View>
             ) : iHaveSubmitted ? (
@@ -77,13 +89,15 @@ export default function GameScreen() {
                 </View>
             ) : (
                 <View style={styles.mainContainer}>
-                    <Text style={styles.playerText}>Enter {opponent}'s secret number:</Text>
-                    <GameMotor 
+                    <View style={styles.singleGameContainer}>
+                        <Text style={styles.playerText}>Enter {opponent}'s secret number:</Text>
+                        <GameMotor 
                         onSecretSubmit={handleOpponentSecretSubmit}
                         color={playerRole === 1 ? '#008000' : '#FF0000'}
                         username={playerRole === 1 ? "Player1" : "Player2"}
                         hideConfirm={false}
                     />
+                    </View>
                 </View>
             )}
         </View>
@@ -104,7 +118,8 @@ const styles = StyleSheet.create({
     playerText: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 20
+        marginBottom: 20,
+        textAlign: 'center',
     },
     readyText: {
         fontSize: 18,
