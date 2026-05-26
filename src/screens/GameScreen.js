@@ -81,6 +81,7 @@ export default function GameScreen() {
                         onGuessSubmitted={handleGuessSubmitted}
                         buttonClickable={isMyTurn}
                         username={sharedActivePlayer === 1 ? "Player1" : "Player2"}
+                        roomId={roomId}
                     />
                 </View>
             ) : iHaveSubmitted ? (

@@ -1,7 +1,8 @@
-import { StyleSheet,View,TextInput,Alert,Text,TouchableOpacity, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { StyleSheet,View,TextInput,Alert,Text,TouchableOpacity, Keyboard, TouchableWithoutFeedback, Modal } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import MyButton from "./button";
 import { useAuth } from '../context/AuthContext';
+import { getSocket } from "../screens/startGameScreen";
 
 const API_URL = 'http://192.168.1.108:3000';
 
@@ -11,7 +12,9 @@ export default function GameMotor({
     targetNumber,
     onGuessSubmitted,
     hideConfirm = false ,
-    buttonClickable
+    buttonClickable,
+    username,
+    roomId
 }) {
     const { token, isLoading, user} = useAuth();
     const [firstvalue, setfirstvalue] = useState('');
@@ -27,6 +30,12 @@ export default function GameMotor({
 
     const [isEnteringNumber, setIsEnteringNumber] = useState(true);
     const [secretNumber, setSecretNumber] = useState('');
+    const [resultModalVisible, setResultModalVisible] = useState(false);
+    const [resultMessage, setResultMessage] = useState('');
+    const [resultCallback, setResultCallback] = useState(null);
+
+    //initialize the socket
+    const socket = getSocket();
 
     const handleSecretNumberChange = (text) => {
         const filtered = text.replace(/[^0-9]/g, '').slice(0, 4);
@@ -104,6 +113,7 @@ export default function GameMotor({
 
         let truePosition = 0;
         let wrongPosition = 0;
+        let allTrue = false;
 
         myValues.forEach((val, index) => {
             const isPresent = secretNumberIndexed.includes(val);
@@ -113,10 +123,27 @@ export default function GameMotor({
                 wrongPosition--;
             } else if (isAtSamePos) {
                 truePosition++;
+                if (truePosition === 4) {
+                    allTrue = true;
+                }
             }
         });
 
-        Alert.alert(
+        if (allTrue) {
+            finishTheGame();
+            Alert.alert(
+            "Game Finished",
+            `Correct position: ${truePosition}\nWrong position: ${Math.abs(wrongPosition)} 1`,
+            [{ text: "OK", onPress: () => {
+                setfirstvalue('');
+                setsecondvalue('');
+                setthirdvalue('');
+                setforthvalue('');
+                if (onGuessSubmitted) onGuessSubmitted();
+            }}  
+        ]);
+        } else {
+            Alert.alert(
             "Result",
             `Correct position: ${truePosition}\nWrong position: ${Math.abs(wrongPosition)}`,
             [{ text: "OK", onPress: () => {
@@ -127,7 +154,25 @@ export default function GameMotor({
                 if (onGuessSubmitted) onGuessSubmitted();
             }}
         ]);
+        }
     }
+
+    function finishTheGame() {
+        if (!socket) return;
+        socket.emit('game_finished',{username,roomId});
+    }
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('game_over',(data) => {
+            console.log(data.message);
+        });
+
+        return () => {
+            socket.off('game_over');
+        }
+    });
 
     if (targetNumber) {
         return (

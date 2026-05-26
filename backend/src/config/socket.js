@@ -4,6 +4,8 @@ import { Server } from 'socket.io';
 let io;
 let queueList = [];
 let waitingRoomList = [];
+let player1Username = '';
+let player2Username = '';
 
 export function initSocket(httpServer) {
   io = new Server(httpServer, {
@@ -24,6 +26,9 @@ export function initSocket(httpServer) {
       if (waitingRoomList.length === 2) {
         const player1 = waitingRoomList.shift();
         const player2 = waitingRoomList.shift();
+        // attach the username to use it in the game_finished alert
+        player1Username = player1.username;
+        player2Username = player2.username;
         addToQueue(io.sockets.sockets.get(player1.socketId), player1.username);
         addToQueue(io.sockets.sockets.get(player2.socketId), player2.username);
       }
@@ -44,7 +49,14 @@ export function initSocket(httpServer) {
     });
 
     socket.on('game_finished', (data) => {
-      
+      const winner = data.username === 'Player1' ? player1Username : player2Username;
+      const loser = data.username === 'Player1' ? player2Username : player1Username;
+  
+      // Emit to both players in the room (would need roomId)
+      io.to(data.roomId).emit('game_over', {
+        winner,
+        message: `${winner} won the game!`
+      });
     });
 
     socket.on('disconnect', () => {
