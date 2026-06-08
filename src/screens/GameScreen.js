@@ -16,6 +16,8 @@ export default function GameScreen() {
     const {roomId, opponent, playerRole} = route.params || {};
     const isMyTurn = playerRole === sharedActivePlayer;
     const bothPlayersReady = player1Secret !== null && player2Secret !== null;
+
+    const [timerCount, setTimer] = useState(10);
     
 
     const handleOpponentSecretSubmit = (secret) => {
@@ -69,10 +71,34 @@ export default function GameScreen() {
         );
     }
 
+    useEffect(() => {
+        let interval = setInterval(() => {
+        setTimer(lastTimerCount => {
+            if (lastTimerCount == 0) {
+                console.log('time finished');
+                // do something
+                const newActivePlayer = sharedActivePlayer === 1 ? 2 : 1;
+                setActivePlayer(newActivePlayer);
+                socket.emit('change_player_turn', {
+                    activePlayer: newActivePlayer,
+                    roomId
+                });
+                setTimer(10);
+            } else {
+                lastTimerCount <= 1 && clearInterval(interval)
+                return lastTimerCount - 1
+            }
+        })
+        }, 1000) //each count lasts for a second
+        //cleanup the interval on complete
+        return () => clearInterval(interval)
+    });
+
     return (
         <View style={styles.mainContainer}>
             {bothPlayersReady ? (
                 <View style={styles.singleGameContainer}>
+                    <Text>{timerCount}</Text>
                     <Text style={styles.playerText}>
                         Player {sharedActivePlayer}'s Turn
                     </Text>
@@ -82,6 +108,7 @@ export default function GameScreen() {
                         buttonClickable={isMyTurn}
                         username={sharedActivePlayer === 1 ? "Player1" : "Player2"}
                         roomId={roomId}
+                        playerRole={playerRole}
                     />
                 </View>
             ) : iHaveSubmitted ? (
@@ -97,6 +124,7 @@ export default function GameScreen() {
                         color={playerRole === 1 ? '#008000' : '#FF0000'}
                         username={playerRole === 1 ? "Player1" : "Player2"}
                         hideConfirm={false}
+                        playerRole={playerRole}
                     />
                     </View>
                 </View>

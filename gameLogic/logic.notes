@@ -1,17 +1,9 @@
 
-[ ] oyun bitiminde iki oyuncu da bilgilendirilecek
-[ ] player 1 ve player 2 yerine oyuncu isimleri yazabilir
+[√] oyun bitiminde iki oyuncu da bilgilendirilecek
+[√] player 1 ve player 2 yerine oyuncu isimleri yazabilir
 [ ] her oyuncunun tahmin yapabilmesi için 30 saniyesi olucak
 
 
-
-
-- OYUN BİTİMİ 
-[ ] oyunculardan biri 4 haneyi de doğru bilicek
-[ ] doğru bilince maç bitti diye bir yazı çıkacak yeşil olacak alert, 
-karşılıklı rakamlar gösterilecek
-[ ] bunun için özel bir alert yap
-[ ] iki oyuncu da odadan atılacak
 
 
 

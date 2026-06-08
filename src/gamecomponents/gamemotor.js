@@ -1,8 +1,10 @@
-import { StyleSheet,View,TextInput,Alert,Text,TouchableOpacity, Keyboard, TouchableWithoutFeedback, Modal } from "react-native";
+import { StyleSheet,View,TextInput,Alert,Text,TouchableOpacity, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import MyButton from "./button";
 import { useAuth } from '../context/AuthContext';
-import { getSocket } from "../screens/startGameScreen";
+import StartGameScreen, { getSocket } from "../screens/startGameScreen";
+import { showAlert, CustomAlertProvider } from "../constants/customAlert";
+import {useNavigation} from '@react-navigation/native';
 
 const API_URL = 'http://192.168.1.108:3000';
 
@@ -14,7 +16,8 @@ export default function GameMotor({
     hideConfirm = false ,
     buttonClickable,
     username,
-    roomId
+    roomId,
+    playerRole
 }) {
     const { token, isLoading, user} = useAuth();
     const [firstvalue, setfirstvalue] = useState('');
@@ -36,6 +39,7 @@ export default function GameMotor({
 
     //initialize the socket
     const socket = getSocket();
+    const navigation = useNavigation();
 
     const handleSecretNumberChange = (text) => {
         const filtered = text.replace(/[^0-9]/g, '').slice(0, 4);
@@ -130,18 +134,8 @@ export default function GameMotor({
         });
 
         if (allTrue) {
+            // send alert to finish the game
             finishTheGame();
-            Alert.alert(
-            "Game Finished",
-            `Correct position: ${truePosition}\nWrong position: ${Math.abs(wrongPosition)} 1`,
-            [{ text: "OK", onPress: () => {
-                setfirstvalue('');
-                setsecondvalue('');
-                setthirdvalue('');
-                setforthvalue('');
-                if (onGuessSubmitted) onGuessSubmitted();
-            }}  
-        ]);
         } else {
             Alert.alert(
             "Result",
@@ -157,25 +151,47 @@ export default function GameMotor({
         }
     }
 
+    // finish thte game and disconnect both users from the room
     function finishTheGame() {
         if (!socket) return;
         socket.emit('game_finished',{username,roomId});
+        socket.emit('end_game',{roomId});
     }
 
     useEffect(() => {
         if (!socket) return;
 
         socket.on('game_over',(data) => {
-            console.log(data.message);
+            const mySecret = playerRole === 1 ? data.player1Secret : data.player2Secret;
+            showAlert({
+                title: "Game Finished",
+                message: `${data.winner} won the game!\nYour secret: ${mySecret}`,
+                buttons: [{ text: "OK", onPress: () => {
+                    setfirstvalue('');
+                    setsecondvalue('');
+                    setthirdvalue('');
+                    setforthvalue('');
+                    if (onGuessSubmitted) onGuessSubmitted();
+                    navigation.navigate('Main');
+                }}],
+                backgroundColor: '#1B5E20',
+                titleColor: '#FFFFFF',
+                messageColor: '#E8F5E9',
+                buttonBgColor: '#4CAF50',
+                buttonTextColor: '#FFFFFF',
+            });
         });
 
         return () => {
             socket.off('game_over');
+            socket.off('users_disconnected');
         }
     });
 
     if (targetNumber) {
         return (
+            <>
+            <CustomAlertProvider />
             <View style={styles.topContainer}>
                 <View style={styles.container}>
                 <TextInput 
@@ -221,11 +237,14 @@ export default function GameMotor({
             </View>
             <MyButton title={'Submit'} onPress={compareSubmission} buttonClickable={buttonClickable}></MyButton>
             </View>
+            </>
         );
     }
 
     if (isEnteringNumber) {
         return (
+            <>
+            <CustomAlertProvider />
             <View style={styles.topContainer}>
                 <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                     <View style={styles.container}>
@@ -247,10 +266,11 @@ export default function GameMotor({
                     </MyButton>
                 }
             </View>
+            </>
         );
     }
 
-    return null;
+    return <CustomAlertProvider />;
 }
 
 const styles = StyleSheet.create({

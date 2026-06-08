@@ -6,6 +6,9 @@ let queueList = [];
 let waitingRoomList = [];
 let player1Username = '';
 let player2Username = '';
+let player1Secret = '';
+let player2Secret = '';
+
 
 export function initSocket(httpServer) {
   io = new Server(httpServer, {
@@ -36,6 +39,11 @@ export function initSocket(httpServer) {
 
     socket.on('secret_submitted', (data) => {
       console.log(`Player ${data.playerRole} submitted their secret ${data.secret} in room ${data.roomId}`);
+      if (data.playerRole === 1) {
+        player1Secret = data.secret;
+      } else {
+        player2Secret = data.secret;
+      }
       socket.to(data.roomId).emit('opponent_secret_submitted', {
         playerRole: data.playerRole,
         secret: data.secret
@@ -43,24 +51,28 @@ export function initSocket(httpServer) {
     });
 
     socket.on('change_player_turn', (data) => {
+      console.log('this worked', data.activePlayer);
       io.to(data.roomId).emit('changed_turns', {
         activePlayer: data.activePlayer
       });
     });
 
     socket.on('game_finished', (data) => {
-      const winner = data.username === 'Player1' ? player1Username : player2Username;
-      const loser = data.username === 'Player1' ? player2Username : player1Username;
-  
-      // Emit to both players in the room (would need roomId)
+      const winner = data.username;
+      console.log('winner is ',winner);
+      // Emit to both players with both secrets so each can see their own
       io.to(data.roomId).emit('game_over', {
         winner,
-        message: `${winner} won the game!`
+        player1Username,
+        player2Username,
+        player1Secret,
+        player2Secret,
       });
     });
 
-    socket.on('disconnect', () => {
+    socket.on('end_game', (data) => {
       console.log('A user disconnected');
+      socket.disconnect();
     });
   });
 

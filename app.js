@@ -10,6 +10,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import NavigationTabs from './src/navigation/navigationTab'; 
 import SignupScreen from './src/screens/SignupScreen';
 import GameScreen from './src/screens/GameScreen';
+import StartGameScreen from './src/screens/startGameScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ function AppStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={NavigationTabs} />
       <Stack.Screen name="Game" component={GameScreen} />
+      <Stack.Screen name="Start Game" component={StartGameScreen} />
     </Stack.Navigator>
   );
 }
