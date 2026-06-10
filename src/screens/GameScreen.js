@@ -35,6 +35,7 @@ export default function GameScreen() {
 
         const newActivePlayer = sharedActivePlayer === 1 ? 2 : 1;
         setActivePlayer(newActivePlayer);
+
         socket.emit('change_player_turn', {
             activePlayer: newActivePlayer,
             roomId
@@ -53,6 +54,8 @@ export default function GameScreen() {
         });
         socket.on('changed_turns', (data) => {
             setSharedActivePlayer(data.activePlayer);
+            // when the turns change the timer becomes 10
+            setTimer(10);
         });
 
         return () => {
@@ -72,27 +75,27 @@ export default function GameScreen() {
     }
 
     useEffect(() => {
-        let interval = setInterval(() => {
-        setTimer(lastTimerCount => {
-            if (lastTimerCount == 0) {
-                console.log('time finished');
-                // do something
-                const newActivePlayer = sharedActivePlayer === 1 ? 2 : 1;
-                setActivePlayer(newActivePlayer);
-                socket.emit('change_player_turn', {
-                    activePlayer: newActivePlayer,
-                    roomId
+    if (!bothPlayersReady) return;
+    const interval = setInterval(() => {
+        setTimer((lastTimerCount) => {
+            if (lastTimerCount === 0) {
+                // Use functional update to get current state
+                setActivePlayer((current) => {
+                    const newPlayer = current === 1 ? 2 : 1;
+                    socket.emit('change_player_turn', {
+                        activePlayer: newPlayer,
+                        roomId
+                    });
+                    return newPlayer;
                 });
-                setTimer(10);
-            } else {
-                lastTimerCount <= 1 && clearInterval(interval)
-                return lastTimerCount - 1
+                return 10;
             }
-        })
-        }, 1000) //each count lasts for a second
-        //cleanup the interval on complete
-        return () => clearInterval(interval)
-    });
+            return lastTimerCount - 1;
+        });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+    }, [bothPlayersReady,socket, roomId]); 
 
     return (
         <View style={styles.mainContainer}>

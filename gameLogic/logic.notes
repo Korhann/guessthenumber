@@ -1,7 +1,14 @@
 
 [√] oyun bitiminde iki oyuncu da bilgilendirilecek
 [√] player 1 ve player 2 yerine oyuncu isimleri yazabilir
-[ ] her oyuncunun tahmin yapabilmesi için 30 saniyesi olucak
+[√] her oyuncunun tahmin yapabilmesi için 30 saniyesi olucak
+[ ] oyuncular yaptığı tahminleri görebilecek
+
+
+- TAHMİNLERİ GÖSTERİLME
+[ ] oyuncuların yaptığı tahminler yanına +1 -1 diye yazılarak gösterilcek
+[ ] 
+[ ] 
 
 
 

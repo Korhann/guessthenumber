@@ -51,7 +51,6 @@ export function initSocket(httpServer) {
     });
 
     socket.on('change_player_turn', (data) => {
-      console.log('this worked', data.activePlayer);
       io.to(data.roomId).emit('changed_turns', {
         activePlayer: data.activePlayer
       });
